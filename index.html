@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking de Tenis</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <h1>Ranking de Tenis</h1>
+    <p>Registro, corrección y ranking automático de partidos</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <h2>Registrar / editar partido</h2>
+        <p>Cada partido recibe un correlativo único al guardarse.</p>
+      </div>
+      <span id="estadoConexion" class="badge badge-warn">Conectando…</span>
+    </div>
+
+    <div id="modoEdicion" class="edit-banner hidden">
+      <strong>Modo edición:</strong>
+      Registro N.º <span id="numeroEditando"></span>
+      <button id="btnCancelarEdicion" class="btn btn-light btn-small">Cancelar edición</button>
+    </div>
+
+    <div class="rules">
+      <strong>Puntuación:</strong>
+      10 pts por vencer a categoría superior ·
+      7 pts por vencer al mismo nivel ·
+      5 pts por vencer a categoría inferior ·
+      1 pt por derrota.
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha">
+      </div>
+      <div>
+        <label>N.º de registro</label>
+        <input type="text" id="numeroRegistroVista" value="Se asigna al guardar" disabled>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table class="score-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Categoría</th>
+            <th>Set 1</th>
+            <th>Set 2</th>
+            <th>Set 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select id="jugadorA">
+                <option value="">Jugador A</option>
+              </select>
+            </td>
+            <td><input type="number" id="categoriaA" min="1" max="5" readonly></td>
+            <td><input type="number" id="set1A" min="0"></td>
+            <td><input type="number" id="set2A" min="0"></td>
+            <td><input type="number" id="set3A" min="0"></td>
+          </tr>
+
+          <tr>
+            <td>
+              <select id="jugadorB">
+                <option value="">Jugador B</option>
+              </select>
+            </td>
+            <td><input type="number" id="categoriaB" min="1" max="5" readonly></td>
+            <td><input type="number" id="set1B" min="0"></td>
+            <td><input type="number" id="set2B" min="0"></td>
+            <td><input type="number" id="set3B" min="0"></td>
+          </tr>
+
+          <tr>
+            <td><strong>Tipo de set</strong></td>
+            <td></td>
+            <td>
+              <select id="tipoSet1">
+                <option value="normal">Set normal</option>
+                <option value="super">Super tie-break</option>
+              </select>
+            </td>
+            <td>
+              <select id="tipoSet2">
+                <option value="normal">Set normal</option>
+                <option value="super">Super tie-break</option>
+              </select>
+            </td>
+            <td>
+              <select id="tipoSet3">
+                <option value="">No utilizado</option>
+                <option value="normal">Set normal</option>
+                <option value="super">Super tie-break</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button id="btnGuardarPartido" class="btn btn-primary">Guardar partido</button>
+      <button id="btnLimpiar" class="btn btn-light">Limpiar</button>
+    </div>
+
+    <div id="mensaje" class="message hidden"></div>
+  </section>
+
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <h2>Corregir un partido</h2>
+        <p>Ingresa el N.º de registro para cargarlo y editarlo.</p>
+      </div>
+    </div>
+
+    <div class="lookup-row">
+      <div>
+        <label for="buscarRegistro">N.º de registro</label>
+        <input type="number" id="buscarRegistro" min="1" placeholder="Ej.: 41">
+      </div>
+      <div class="lookup-button">
+        <button id="btnBuscarRegistro" class="btn btn-primary">Buscar registro</button>
+      </div>
+    </div>
+
+    <div id="resultadoBusqueda" class="lookup-result hidden"></div>
+  </section>
+
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <h2>Jugadores</h2>
+        <p>Crear o eliminar jugadores del listado activo.</p>
+      </div>
+    </div>
+
+    <form id="formJugador" class="grid-player">
+      <div>
+        <label for="nuevoNombre">Nombre</label>
+        <input type="text" id="nuevoNombre" placeholder="Nombre completo" maxlength="80">
+      </div>
+
+      <div>
+        <label for="nuevaCategoria">Categoría</label>
+        <select id="nuevaCategoria">
+          <option value="">Seleccione</option>
+          <option value="1">1 - Mayor</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5 - Menor</option>
+        </select>
+      </div>
+
+      <div class="player-button">
+        <button class="btn btn-primary" type="submit">Crear jugador</button>
+      </div>
+    </form>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Jugador</th>
+            <th>Categoría</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tablaJugadores"></tbody>
+      </table>
+    </div>
+
+    <p class="note">
+      Eliminar un jugador lo retira del listado activo, pero conserva sus partidos históricos.
+    </p>
+  </section>
+
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <h2>Ranking</h2>
+        <p>Se recalcula automáticamente al guardar o corregir un partido.</p>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Pos.</th>
+            <th>Jugador</th>
+            <th>Cat.</th>
+            <th>Puntos</th>
+            <th>PJ</th>
+            <th>PG</th>
+            <th>PP</th>
+            <th>Sets ganados</th>
+            <th>Juegos ganados</th>
+          </tr>
+        </thead>
+        <tbody id="tablaRanking"></tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <h2>Registro maestro</h2>
+        <p>Todos los resultados quedan guardados con correlativo.</p>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>N.º</th>
+            <th>Fecha</th>
+            <th>Jugador A</th>
+            <th>Cat.</th>
+            <th>Resultado</th>
+            <th>Jugador B</th>
+            <th>Cat.</th>
+            <th>Ganador</th>
+            <th>Pts.</th>
+            <th>Última modificación</th>
+          </tr>
+        </thead>
+        <tbody id="tablaPartidos"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
