@@ -22,15 +22,20 @@ import {
    1. CONFIGURACIÓN FIREBASE
 ============================================================ */
 
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "REEMPLAZAR_API_KEY",
-  authDomain: "REEMPLAZAR_PROJECT_ID.firebaseapp.com",
-  projectId: "REEMPLAZAR_PROJECT_ID",
-  storageBucket: "REEMPLAZAR_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "REEMPLAZAR_MESSAGING_SENDER_ID",
-  appId: "REEMPLAZAR_APP_ID"
+  apiKey: "AIzaSyD49Let7bMQiOI-qlMD2CqeBF8KBIAysEk",
+  authDomain: "ranking-club-tenis-lonquimay.firebaseapp.com",
+  projectId: "ranking-club-tenis-lonquimay",
+  storageBucket: "ranking-club-tenis-lonquimay.firebasestorage.app",
+  messagingSenderId: "146624104646",
+  appId: "1:146624104646:web:24ad6f8f54dc8da62a2fc7"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
