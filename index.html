@@ -43,32 +43,32 @@
     <!-- =====================================================
      LOGIN GOOGLE
 ===================================================== -->
-<!-- =====================================================
-     LOGIN GOOGLE
-===================================================== -->
+
     <main id="vistaLogin" class="auth-wrapper">
-    <section class="auth-card">
+      <section class="auth-card">
         <h2>Ingreso al Ranking</h2>
 
         <p class="center muted">
-        Para utilizar la aplicación debe identificarse con una cuenta de Google.
+          Para utilizar la aplicación debe identificarse con una cuenta de
+          Google.
         </p>
 
-        <!-- Opción de recordar sesión -->
-        <div style="margin: 15px 0; text-align: left;">
-        <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+        <!-- Selección de persistencia de sesión -->
+        <div style="margin: 18px 0; text-align: left;">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
             <input type="checkbox" id="chkRecordarSesion" checked style="width: auto;">
             Mantener la sesión iniciada
-        </label>
+          </label>
         </div>
 
         <button id="btnGoogle" class="btn-google">
-        <span class="google-letter"> G </span>
-        Continuar con Google
+          <span class="google-letter"> G </span>
+
+          Continuar con Google
         </button>
 
         <div id="mensajeLogin" class="message hidden"></div>
-    </section>
+      </section>
     </main>
 
     <!-- =====================================================
@@ -560,19 +560,24 @@
             estado de un perfil.
           </p>
 
-          <!-- En la sección Administración de usuarios -->
           <div class="table-scroll">
             <table>
               <thead>
                 <tr>
                   <th>Nombre Google</th>
+
                   <th>Correo</th>
+
                   <th>Jugador</th>
+
                   <th>Rol</th>
+
                   <th>Activo</th>
-                  <th>Acciones</th> <!-- Cambia 'Guardar' por 'Acciones' -->
+
+                  <th>Acciones</th>
                 </tr>
               </thead>
+
               <tbody id="tablaUsuarios"></tbody>
             </table>
           </div>
@@ -581,25 +586,7 @@
         <!-- ===================================================
        AUDITORÍA
   =================================================== -->
-      <section class="card">
-        <div class="section-title">
-          <div>
-            <h2>Auditoría</h2>
-            <p>Control de modificaciones efectuadas sobre los registros.</p>
-          </div>
-          <button id="btnLimpiarAuditoria" class="btn btn-danger btn-small">
-            Limpiar registro de auditoría
-          </button>
-        </div>
 
-        <p class="note">
-          Historial de correcciones, anulaciones y eliminaciones.
-        </p>
-
-        <div class="table-scroll">
-          <!-- Tabla de auditoría sin cambios -->
-        </div>
-      </section>
         <section class="card">
           <div class="section-title">
             <div>
@@ -607,6 +594,10 @@
 
               <p>Control de modificaciones efectuadas sobre los registros.</p>
             </div>
+
+            <button id="btnLimpiarAuditoria" class="btn btn-danger btn-small">
+              Limpiar registro de auditoría
+            </button>
           </div>
 
           <p class="note">
@@ -691,17 +682,10 @@
       </div>
     </div>
 
-    <!-- =====================================================
-     SHEETJS
-     GENERACIÓN DE ARCHIVOS XLSX
-===================================================== -->
-
+    <!-- SHEETJS GENERACIÓN DE ARCHIVOS XLSX -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-    <!-- =====================================================
-     JAVASCRIPT PRINCIPAL
-===================================================== -->
-
+    <!-- JAVASCRIPT PRINCIPAL -->
     <script type="module" src="app.js"></script>
   </body>
 </html>
