@@ -43,24 +43,32 @@
     <!-- =====================================================
      LOGIN GOOGLE
 ===================================================== -->
-
+<!-- =====================================================
+     LOGIN GOOGLE
+===================================================== -->
     <main id="vistaLogin" class="auth-wrapper">
-      <section class="auth-card">
+    <section class="auth-card">
         <h2>Ingreso al Ranking</h2>
 
         <p class="center muted">
-          Para utilizar la aplicación debe identificarse con una cuenta de
-          Google.
+        Para utilizar la aplicación debe identificarse con una cuenta de Google.
         </p>
 
-        <button id="btnGoogle" class="btn-google">
-          <span class="google-letter"> G </span>
+        <!-- Opción de recordar sesión -->
+        <div style="margin: 15px 0; text-align: left;">
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+            <input type="checkbox" id="chkRecordarSesion" checked style="width: auto;">
+            Mantener la sesión iniciada
+        </label>
+        </div>
 
-          Continuar con Google
+        <button id="btnGoogle" class="btn-google">
+        <span class="google-letter"> G </span>
+        Continuar con Google
         </button>
 
         <div id="mensajeLogin" class="message hidden"></div>
-      </section>
+    </section>
     </main>
 
     <!-- =====================================================
