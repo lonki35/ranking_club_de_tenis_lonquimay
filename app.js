@@ -14,6 +14,7 @@ import {
   getRedirectResult,
   setPersistence,
   browserLocalPersistence,
+  browserSessionPersistence,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -56,9 +57,6 @@ const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 const googleProvider = new GoogleAuthProvider();
-
-// Configuración global de persistencia local
-setPersistence(auth, browserLocalPersistence).catch(console.error);
 
 
 /* ============================================================
@@ -117,6 +115,7 @@ const el = id => document.getElementById(id);
 
 document.addEventListener("DOMContentLoaded", async () => {
 
+  // 1. Vincular eventos de botones
   el("btnGoogle").addEventListener("click", loginGoogle);
   el("btnCerrarSesion").addEventListener("click", cerrarSesion);
   el("btnCancelarPerfil").addEventListener("click", cerrarSesion);
@@ -153,13 +152,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   prepararMarcadores();
   el("fecha").value = fechaActual();
 
-  // Procesar redirección por si se navegó desde móvil
+  // 2. Procesar el resultado de redirección ANTES de escuchar cambios de estado
   try {
     await getRedirectResult(auth);
   } catch (error) {
-    console.error("Error al procesar redirección de login:", error);
+    console.error("Error al procesar redirect:", error);
   }
 
+  // 3. Iniciar escucha de autenticación
   escucharAutenticacion();
 });
 
@@ -171,34 +171,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function loginGoogle() {
   ocultarMensaje("mensajeLogin");
 
-  try {
-    googleProvider.setCustomParameters({ prompt: "select_account" });
-    await signInWithPopup(auth, googleProvider);
-  } catch (error) {
-    console.error("Error al iniciar sesión con Popup:", error);
+  const recordar = el("chkRecordarSesion") ? el("chkRecordarSesion").checked : true;
+  const modoPersistencia = recordar ? browserLocalPersistence : browserSessionPersistence;
 
-    // Si el navegador bloqueó la ventana flotante en celulares
-    if (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user") {
-      try {
-        await signInWithRedirect(auth, googleProvider);
-      } catch (redirectErr) {
-        mostrarMensaje("mensajeLogin", "Asegúrese de permitir las ventanas emergentes en su navegador.", "error");
-      }
+  try {
+    // Definir la persistencia
+    await setPersistence(auth, modoPersistencia);
+    googleProvider.setCustomParameters({ prompt: "select_account" });
+
+    // Usar signInWithPopup SIEMPRE (evita el bucle de recarga de página en celulares)
+    await signInWithPopup(auth, googleProvider);
+
+  } catch (error) {
+    console.error("Error al iniciar sesión:", error);
+    
+    // Si el navegador bloqueó la ventana emergente, avisar al usuario
+    if (error.code === "auth/popup-blocked") {
+      mostrarMensaje("mensajeLogin", "Por favor, permite las ventanas emergentes en tu navegador.", "error");
     } else {
       mostrarMensaje("mensajeLogin", "No fue posible iniciar sesión con Google.", "error");
     }
   }
 }
-
 async function cerrarSesion() {
   try {
     detenerListeners();
+    await signOut(auth);
     perfilActual = null;
     usuarioActual = null;
-    await signOut(auth);
     mostrarSoloVista("login");
   } catch (error) {
-    console.error("Error al cerrar sesión:", error);
+    console.error(error);
   }
 }
 
@@ -211,6 +214,7 @@ const MODO_BYPASS = false;
 
 function escucharAutenticacion() {
   if (MODO_BYPASS) {
+    // ... tu bloque bypass si lo usas localmente ...
     return;
   }
 
@@ -225,8 +229,7 @@ function escucharAutenticacion() {
     }
 
     try {
-      const perfilRef = doc(db, "usuarios", user.uid);
-      const perfilSnap = await getDoc(perfilRef);
+      const perfilSnap = await getDoc(doc(db, "usuarios", user.uid));
 
       if (!perfilSnap.exists()) {
         await prepararNuevoPerfil(user);
@@ -248,12 +251,30 @@ function escucharAutenticacion() {
 
       abrirAplicacion();
     } catch (error) {
-      console.error("Error al obtener perfil desde Firestore:", error);
-      mostrarMensaje("mensajeLogin", "Error al conectar con la base de datos. Intente presionar el botón nuevamente.", "error");
+      console.error("Error durante la verificación de perfil:", error);
+      mostrarSoloVista("login");
+      mostrarMensaje("mensajeLogin", "No fue posible verificar el perfil.", "error");
     }
   });
 }
+// Función auxiliar para cargar la interfaz en modo local
+function abrirAplicacionBypass() {
+  mostrarSoloVista("app");
 
+  el("nombreUsuario").textContent = perfilActual.nombreGoogle;
+  el("correoUsuario").textContent = perfilActual.email;
+  el("rolActual").textContent = perfilActual.rol.toUpperCase();
+
+  el("panelAdministrador").classList.toggle("hidden", !esAdmin());
+  el("thAccionesPartidos").classList.toggle("hidden", !esAdmin());
+
+  cargarSelectJugadores();
+  if (esAdmin()) renderJugadoresAdmin();
+  renderRanking();
+
+  el("estadoConexion").textContent = "Modo Local (Bypass)";
+  el("estadoConexion").className = "badge badge-warn";
+}
 
 /* ============================================================
    PRIMER PERFIL
