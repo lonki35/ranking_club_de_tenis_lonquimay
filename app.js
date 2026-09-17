@@ -202,7 +202,49 @@ async function cerrarSesion() {
    AUTH STATE
 ============================================================ */
 
+/* ============================================================
+   AUTH STATE (MODO BYPASS LOCAL)
+============================================================ */
+
+const MODO_BYPASS = false; // CAMBIAR A false PARA PRODUCCIÓN
+
 function escucharAutenticacion() {
+  if (MODO_BYPASS) {
+    console.warn("⚠️ MODO BYPASS ACTIVADO: Simulando sesión local");
+
+    // Simular objeto de usuario de Firebase Auth
+    usuarioActual = {
+      uid: "bypass-local-admin-uid",
+      email: "admin.local@lonquimay.cl",
+      displayName: "Administrador de Prueba",
+      photoURL: ""
+    };
+
+    // Simular perfil de Firestore con rol de Administrador
+    perfilActual = {
+      id: "bypass-local-admin-uid",
+      nombreGoogle: "Administrador de Prueba",
+      email: "admin.local@lonquimay.cl",
+      jugadorId: "inicial-0",
+      jugadorNombre: "Rodrigo Alday",
+      rol: "admin", // Cambia a "usuario" si quieres probar la vista normal
+      activo: true
+    };
+
+    // Desactivar temporalmente llamadas en tiempo real que requieran Firestore autenticado
+    jugadores = JUGADORES_INICIALES.map((j, i) => ({
+      id: `local-${i}`,
+      nombre: j.nombre,
+      categoria: j.categoria,
+      activo: true
+    }));
+
+    // Abrir directamente la aplicación
+    abrirAplicacionBypass();
+    return;
+  }
+
+  // CÓDIGO REAL DE FIREBASE (SE EJECUTA SI MODO_BYPASS ES false)
   onAuthStateChanged(auth, async user => {
     usuarioActual = user;
     detenerListeners();
@@ -242,6 +284,24 @@ function escucharAutenticacion() {
   });
 }
 
+// Función auxiliar para cargar la interfaz en modo local
+function abrirAplicacionBypass() {
+  mostrarSoloVista("app");
+
+  el("nombreUsuario").textContent = perfilActual.nombreGoogle;
+  el("correoUsuario").textContent = perfilActual.email;
+  el("rolActual").textContent = perfilActual.rol.toUpperCase();
+
+  el("panelAdministrador").classList.toggle("hidden", !esAdmin());
+  el("thAccionesPartidos").classList.toggle("hidden", !esAdmin());
+
+  cargarSelectJugadores();
+  if (esAdmin()) renderJugadoresAdmin();
+  renderRanking();
+
+  el("estadoConexion").textContent = "Modo Local (Bypass)";
+  el("estadoConexion").className = "badge badge-warn";
+}
 
 /* ============================================================
    PRIMER PERFIL
