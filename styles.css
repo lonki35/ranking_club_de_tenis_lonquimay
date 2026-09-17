@@ -1,3 +1,7 @@
+/* =========================================================
+   CONFIGURACIÓN GENERAL
+========================================================= */
+
 * {
   box-sizing: border-box;
 }
@@ -28,7 +32,9 @@ body {
 }
 
 
-/* CABECERA */
+/* =========================================================
+   CABECERA
+========================================================= */
 
 .topbar {
   background: var(--primary-dark);
@@ -50,7 +56,7 @@ body {
 
 .topbar p {
   margin: 0;
-  opacity: .85;
+  opacity: 0.85;
 }
 
 .user-box {
@@ -69,11 +75,13 @@ body {
 
 .small-text {
   font-size: 12px;
-  opacity: .85;
+  opacity: 0.85;
 }
 
 
-/* LOGIN */
+/* =========================================================
+   LOGIN
+========================================================= */
 
 .auth-wrapper {
   display: flex;
@@ -86,7 +94,7 @@ body {
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, .12);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
 }
 
 .auth-card h2 {
@@ -103,6 +111,11 @@ body {
   color: var(--muted);
 }
 
+
+/* =========================================================
+   GOOGLE LOGIN
+========================================================= */
+
 .btn-google {
   width: 100%;
   margin-top: 25px;
@@ -113,6 +126,11 @@ body {
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-google:hover {
+  background: #f5f5f5;
 }
 
 .google-letter {
@@ -123,14 +141,16 @@ body {
 }
 
 
-/* CARDS */
+/* =========================================================
+   CARDS
+========================================================= */
 
 .card {
   background: var(--card);
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, .08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .section-title {
@@ -151,6 +171,11 @@ body {
   color: var(--muted);
 }
 
+
+/* =========================================================
+   PANEL ADMINISTRADOR
+========================================================= */
+
 .admin-title {
   background: var(--primary-dark);
   color: white;
@@ -159,10 +184,46 @@ body {
   border-radius: 8px;
   font-size: 19px;
   font-weight: bold;
+  letter-spacing: 0.4px;
+}
+
+.admin-card {
+  border-top: 4px solid var(--primary);
+}
+
+.admin-subtitle {
+  margin-top: 22px;
+  margin-bottom: 12px;
+}
+
+.admin-subtitle h3 {
+  margin: 0 0 5px;
+  color: var(--primary-dark);
 }
 
 
-/* FORMULARIOS */
+/* =========================================================
+   PANEL ADMINISTRACIÓN JUGADORES
+========================================================= */
+
+#contenidoAdminJugadores {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+#btnMostrarAdminJugadores {
+  white-space: nowrap;
+}
+
+#mensajeJugador {
+  margin-bottom: 20px;
+}
+
+
+/* =========================================================
+   FORMULARIOS
+========================================================= */
 
 label {
   display: block;
@@ -178,6 +239,13 @@ select {
   border-radius: 6px;
   background: white;
   font-size: 15px;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(31, 78, 120, 0.12);
 }
 
 input[readonly],
@@ -208,7 +276,9 @@ input:disabled {
 }
 
 
-/* REGLAS */
+/* =========================================================
+   REGLAS DEL RANKING
+========================================================= */
 
 .rules {
   background: #eef5fa;
@@ -217,6 +287,11 @@ input:disabled {
   border-radius: 6px;
   margin-bottom: 20px;
 }
+
+
+/* =========================================================
+   EDICIÓN DE PARTIDOS
+========================================================= */
 
 .edit-banner {
   display: flex;
@@ -230,7 +305,9 @@ input:disabled {
 }
 
 
-/* TABLAS */
+/* =========================================================
+   TABLAS
+========================================================= */
 
 .table-scroll {
   width: 100%;
@@ -256,12 +333,49 @@ th {
   color: white;
 }
 
+tbody tr:nth-child(even) {
+  background: #f8fafb;
+}
+
+tbody tr:hover {
+  background: #eef5fa;
+}
+
 .score-table td:first-child {
   min-width: 220px;
 }
 
 
-/* BOTONES */
+/* =========================================================
+   TABLA ADMINISTRACIÓN DE JUGADORES
+========================================================= */
+
+#tablaJugadores input,
+#tablaJugadores select {
+  min-width: 110px;
+}
+
+#tablaJugadores input[type="text"] {
+  min-width: 190px;
+}
+
+#tablaJugadores td:last-child {
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   TABLA ADMINISTRACIÓN DE USUARIOS
+========================================================= */
+
+#tablaUsuarios select {
+  min-width: 110px;
+}
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
 
 .actions {
   display: flex;
@@ -277,6 +391,22 @@ th {
   padding: 11px 16px;
   font-weight: bold;
   cursor: pointer;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .btn-primary {
@@ -310,7 +440,9 @@ th {
 }
 
 
-/* MENSAJES */
+/* =========================================================
+   MENSAJES
+========================================================= */
 
 .message {
   margin-top: 16px;
@@ -328,6 +460,11 @@ th {
   background: #f4cccc;
   color: #990000;
 }
+
+
+/* =========================================================
+   BADGES
+========================================================= */
 
 .badge {
   display: inline-block;
@@ -347,10 +484,20 @@ th {
   color: #7f6000;
 }
 
+
+/* =========================================================
+   NOTAS
+========================================================= */
+
 .note {
   font-size: 13px;
   color: var(--muted);
 }
+
+
+/* =========================================================
+   RESULTADO DE BÚSQUEDA
+========================================================= */
 
 .lookup-result {
   margin-top: 15px;
@@ -360,14 +507,21 @@ th {
   border-radius: 7px;
 }
 
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
 .hidden {
   display: none !important;
 }
 
 
-/* MÓVIL */
+/* =========================================================
+   RESPONSIVE / CELULARES
+========================================================= */
 
-@media(max-width: 760px) {
+@media (max-width: 760px) {
 
   .grid-2,
   .grid-player,
@@ -386,5 +540,17 @@ th {
 
   .user-box {
     flex-wrap: wrap;
+  }
+
+  #btnMostrarAdminJugadores {
+    width: 100%;
+  }
+
+  .actions .btn {
+    width: 100%;
+  }
+
+  .admin-title {
+    margin-top: 25px;
   }
 }
