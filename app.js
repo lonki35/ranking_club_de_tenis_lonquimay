@@ -166,6 +166,10 @@ document.addEventListener("DOMContentLoaded", async () => {
    GOOGLE LOGIN / LOGOUT
 ============================================================ */
 
+/* ============================================================
+   GOOGLE LOGIN / LOGOUT
+============================================================ */
+
 async function loginGoogle() {
   ocultarMensaje("mensajeLogin");
 
@@ -173,19 +177,26 @@ async function loginGoogle() {
   const modoPersistencia = recordar ? browserLocalPersistence : browserSessionPersistence;
 
   try {
+    // 1. Configurar la persistencia primero
     await setPersistence(auth, modoPersistencia);
     googleProvider.setCustomParameters({ prompt: "select_account" });
 
-    const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // 2. Usar signInWithPopup para evitar recargas de página y bucles en móviles
+    await signInWithPopup(auth, googleProvider);
 
-    if (esMovil) {
-      await signInWithRedirect(auth, googleProvider);
-    } else {
-      await signInWithPopup(auth, googleProvider);
-    }
   } catch (error) {
-    console.error(error);
-    mostrarMensaje("mensajeLogin", "No fue posible iniciar sesión con Google.", "error");
+    console.error("Error durante el inicio de sesión:", error);
+    
+    // Si el navegador móvil bloqueó el popup, fallback seguro a Redirect
+    if (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user") {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+      } catch (errRedirect) {
+        mostrarMensaje("mensajeLogin", "No fue posible abrir la ventana de Google.", "error");
+      }
+    } else {
+      mostrarMensaje("mensajeLogin", "No fue posible iniciar sesión con Google.", "error");
+    }
   }
 }
 
