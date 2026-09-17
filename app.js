@@ -24,6 +24,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   doc,
   onSnapshot,
   query,
@@ -1861,6 +1862,30 @@ function renderPartidos() {
 
     });
 
+    // Acciones disponibles exclusivamente para administradores.
+    const tdAcciones = document.createElement("td");
+
+    if (esAdmin()) {
+      const btnEditar = document.createElement("button");
+      btnEditar.textContent = "Modificar";
+      btnEditar.className = "btn btn-primary btn-small";
+      btnEditar.onclick = () => cargarEdicion(p);
+
+      const btnEliminar = document.createElement("button");
+      btnEliminar.textContent = "Eliminar";
+      btnEliminar.className = "btn btn-danger btn-small";
+      btnEliminar.onclick = () => eliminarPartido(p);
+
+      tdAcciones.append(
+        btnEditar,
+        document.createTextNode(" "),
+        btnEliminar
+      );
+    } else {
+      tdAcciones.textContent = "—";
+    }
+
+    tr.appendChild(tdAcciones);
     tbody.appendChild(tr);
 
   });
@@ -2154,6 +2179,65 @@ async function anularPartido() {
 
 
 /* ============================================================
+   ELIMINAR PARTIDO DEFINITIVAMENTE (SOLO ADMIN)
+============================================================ */
+
+async function eliminarPartido(partido = partidoEnEdicion) {
+
+  if (!esAdmin() || !partido) {
+    return;
+  }
+
+  const confirmar = window.confirm(
+    `¿Eliminar DEFINITIVAMENTE el partido N.º ${partido.numeroRegistro}?\n\n` +
+    "Esta acción lo quitará del registro maestro y del cálculo del ranking. " +
+    "La eliminación quedará registrada en Auditoría."
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+    const anterior = copiarDatosAuditoria(partido);
+
+    await deleteDoc(
+      doc(db, "partidos", partido.idFirestore)
+    );
+
+    await addDoc(
+      collection(db, "auditoria"),
+      {
+        accion: "ELIMINACIÓN DE PARTIDO",
+        numeroRegistro: partido.numeroRegistro,
+        usuarioUid: usuarioActual.uid,
+        usuarioEmail: usuarioActual.email || "",
+        anterior,
+        fecha: serverTimestamp()
+      }
+    );
+
+    mostrarMensaje(
+      "mensaje",
+      `Partido N.º ${partido.numeroRegistro} eliminado definitivamente.`,
+      "ok"
+    );
+
+    if (partidoEnEdicion?.idFirestore === partido.idFirestore) {
+      cancelarEdicion();
+    }
+  } catch (error) {
+    console.error("Error eliminando partido:", error);
+    mostrarMensaje(
+      "mensaje",
+      "No fue posible eliminar el partido.",
+      "error"
+    );
+  }
+}
+
+
+/* ============================================================
    RANKING
 ============================================================ */
 
@@ -2263,8 +2347,15 @@ function calcularRanking() {
 
     });
 
+  const idsActivos = new Set(
+    jugadores
+      .filter(j => j.activo !== false)
+      .map(j => j.id)
+  );
+
   return Object
     .values(mapa)
+    .filter(j => idsActivos.has(j.jugadorId))
     .sort((a, b) =>
 
       b.puntos - a.puntos
@@ -2783,10 +2874,19 @@ function renderJugadoresAdmin() {
       };
 
 
+    const btnEliminar =
+      document.createElement("button");
+
+    btnEliminar.textContent = "Eliminar";
+    btnEliminar.className = "btn btn-danger btn-small";
+    btnEliminar.onclick = () => eliminarJugadorCompleto(j.id);
+
     tdAcciones.append(
       btnGuardar,
       document.createTextNode(" "),
-      btnEstado
+      btnEstado,
+      document.createTextNode(" "),
+      btnEliminar
     );
 
 
@@ -2801,6 +2901,117 @@ function renderJugadoresAdmin() {
 
   });
 
+}
+
+
+/* ============================================================
+   ELIMINAR JUGADOR Y DECIDIR QUÉ HACER CON SU HISTORIAL
+============================================================ */
+
+async function eliminarJugadorCompleto(jugadorId) {
+
+  if (!esAdmin()) {
+    return;
+  }
+
+  const jugador = jugadores.find(j => j.id === jugadorId);
+  if (!jugador) {
+    return;
+  }
+
+  const partidosAsociados = partidos.filter(
+    p => p.jugadorAId === jugadorId || p.jugadorBId === jugadorId
+  );
+
+  const opcion = window.prompt(
+    `Eliminar jugador: ${jugador.nombre}\n\n` +
+    `Tiene ${partidosAsociados.length} partido(s) asociado(s).\n\n` +
+    "Escriba una opción:\n" +
+    "1 = Eliminar SOLO al jugador y CONSERVAR su historial de partidos\n" +
+    "2 = Eliminar al jugador y ELIMINAR también todos sus partidos\n" +
+    "3 = Cancelar",
+    "1"
+  );
+
+  if (opcion === null || opcion.trim() === "3") {
+    return;
+  }
+
+  if (!["1", "2"].includes(opcion.trim())) {
+    mostrarMensaje(
+      "mensajeJugador",
+      "Opción no válida. No se realizó ningún cambio.",
+      "error"
+    );
+    return;
+  }
+
+  const eliminarHistorial = opcion.trim() === "2";
+
+  const confirmar = window.confirm(
+    eliminarHistorial
+      ? `Se eliminará a ${jugador.nombre} y ${partidosAsociados.length} partido(s) asociado(s). ¿Continuar?`
+      : `Se eliminará a ${jugador.nombre}, pero se conservarán sus ${partidosAsociados.length} partido(s) históricos. ¿Continuar?`
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+    // Si hay perfiles vinculados, se dejan sin jugador para evitar referencias huérfanas.
+    const perfilesVinculados = usuarios.filter(u => u.jugadorId === jugadorId);
+    for (const u of perfilesVinculados) {
+      await updateDoc(
+        doc(db, "usuarios", u.id),
+        {
+          jugadorId: "",
+          jugadorNombre: "",
+          modificadoEn: serverTimestamp()
+        }
+      );
+    }
+
+    if (eliminarHistorial) {
+      for (const p of partidosAsociados) {
+        await deleteDoc(doc(db, "partidos", p.idFirestore));
+      }
+    }
+
+    await deleteDoc(doc(db, "jugadores", jugadorId));
+
+    await addDoc(
+      collection(db, "auditoria"),
+      {
+        accion: eliminarHistorial
+          ? "ELIMINACIÓN DE JUGADOR E HISTORIAL"
+          : "ELIMINACIÓN DE JUGADOR - HISTORIAL CONSERVADO",
+        numeroRegistro: "",
+        jugadorId,
+        jugadorNombre: jugador.nombre,
+        partidosAfectados: partidosAsociados.length,
+        perfilesDesvinculados: perfilesVinculados.length,
+        usuarioUid: usuarioActual.uid,
+        usuarioEmail: usuarioActual.email || "",
+        fecha: serverTimestamp()
+      }
+    );
+
+    mostrarMensaje(
+      "mensajeJugador",
+      eliminarHistorial
+        ? `${jugador.nombre} y su historial fueron eliminados.`
+        : `${jugador.nombre} fue eliminado y su historial fue conservado.`,
+      "ok"
+    );
+  } catch (error) {
+    console.error("Error eliminando jugador:", error);
+    mostrarMensaje(
+      "mensajeJugador",
+      "No fue posible completar la eliminación del jugador.",
+      "error"
+    );
+  }
 }
 
 
