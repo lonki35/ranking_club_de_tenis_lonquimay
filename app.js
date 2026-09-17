@@ -175,23 +175,24 @@ async function loginGoogle() {
   const modoPersistencia = recordar ? browserLocalPersistence : browserSessionPersistence;
 
   try {
+    // Definir la persistencia
     await setPersistence(auth, modoPersistencia);
     googleProvider.setCustomParameters({ prompt: "select_account" });
 
-    // En móviles usamos Redirect pero asegurando que la promesa resuelva
-    const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Usar signInWithPopup SIEMPRE (evita el bucle de recarga de página en celulares)
+    await signInWithPopup(auth, googleProvider);
 
-    if (esMovil) {
-      await signInWithRedirect(auth, googleProvider);
-    } else {
-      await signInWithPopup(auth, googleProvider);
-    }
   } catch (error) {
     console.error("Error al iniciar sesión:", error);
-    mostrarMensaje("mensajeLogin", "No fue posible iniciar sesión con Google.", "error");
+    
+    // Si el navegador bloqueó la ventana emergente, avisar al usuario
+    if (error.code === "auth/popup-blocked") {
+      mostrarMensaje("mensajeLogin", "Por favor, permite las ventanas emergentes en tu navegador.", "error");
+    } else {
+      mostrarMensaje("mensajeLogin", "No fue posible iniciar sesión con Google.", "error");
+    }
   }
 }
-
 async function cerrarSesion() {
   try {
     detenerListeners();
