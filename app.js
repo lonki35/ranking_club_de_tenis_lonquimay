@@ -1373,11 +1373,14 @@ function renderUsuariosAdmin() {
     check.checked = u.activo !== false;
     tdActivo.appendChild(check);
 
-    const tdGuardar = document.createElement("td");
-    const boton = document.createElement("button");
-    boton.textContent = "Guardar";
-    boton.className = "btn btn-primary btn-small";
-    boton.onclick = async () => {
+    // Columna de Acciones (Guardar y Eliminar)
+    const tdAcciones = document.createElement("td");
+    tdAcciones.style.whiteSpace = "nowrap";
+
+    const btnGuardar = document.createElement("button");
+    btnGuardar.textContent = "Guardar";
+    btnGuardar.className = "btn btn-primary btn-small";
+    btnGuardar.onclick = async () => {
       const jug = jugadores.find(j => j.id === selectJugador.value);
       await updateDoc(doc(db, "usuarios", u.id), {
         jugadorId: selectJugador.value || null,
@@ -1389,13 +1392,37 @@ function renderUsuariosAdmin() {
       });
       window.alert("Perfil de usuario actualizado.");
     };
-    tdGuardar.appendChild(boton);
 
-    tr.append(tdNombre, tdEmail, tdJugador, tdRol, tdActivo, tdGuardar);
+    const btnEliminar = document.createElement("button");
+    btnEliminar.textContent = "Eliminar";
+    btnEliminar.className = "btn btn-danger btn-small";
+    btnEliminar.style.marginLeft = "4px";
+    btnEliminar.onclick = async () => {
+      if (u.id === usuarioActual.uid) {
+        window.alert("No puedes eliminar tu propia cuenta de administrador.");
+        return;
+      }
+
+      const confirmar = window.confirm(
+        `¿Desea eliminar el perfil del usuario ${u.email}? El usuario perderá el acceso a la aplicación.`
+      );
+
+      if (!confirmar) return;
+
+      try {
+        await deleteDoc(doc(db, "usuarios", u.id));
+        window.alert("Usuario eliminado de la base de datos.");
+      } catch (error) {
+        console.error("Error al eliminar usuario:", error);
+        window.alert("No fue posible eliminar el usuario.");
+      }
+    };
+
+    tdAcciones.append(btnGuardar, btnEliminar);
+    tr.append(tdNombre, tdEmail, tdJugador, tdRol, tdActivo, tdAcciones);
     tbody.appendChild(tr);
   });
 }
-
 
 /* ============================================================
    AUDITORÍA
