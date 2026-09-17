@@ -115,12 +115,7 @@ const el = id => document.getElementById(id);
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  try {
-    await getRedirectResult(auth);
-  } catch (error) {
-    console.error("Error redirect login:", error);
-  }
-
+  // 1. Vincular eventos de botones
   el("btnGoogle").addEventListener("click", loginGoogle);
   el("btnCerrarSesion").addEventListener("click", cerrarSesion);
   el("btnCancelarPerfil").addEventListener("click", cerrarSesion);
@@ -157,14 +152,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   prepararMarcadores();
   el("fecha").value = fechaActual();
 
-  escucharAutenticacion();
+  // 2. Procesar el resultado de redirección ANTES de escuchar cambios de estado
+  try {
+    await getRedirectResult(auth);
+  } catch (error) {
+    console.error("Error al procesar redirect:", error);
+  }
 
+  // 3. Iniciar escucha de autenticación
+  escucharAutenticacion();
 });
 
-
-/* ============================================================
-   GOOGLE LOGIN / LOGOUT
-============================================================ */
 
 /* ============================================================
    GOOGLE LOGIN / LOGOUT
@@ -177,32 +175,30 @@ async function loginGoogle() {
   const modoPersistencia = recordar ? browserLocalPersistence : browserSessionPersistence;
 
   try {
-    // 1. Configurar la persistencia primero
     await setPersistence(auth, modoPersistencia);
     googleProvider.setCustomParameters({ prompt: "select_account" });
 
-    // 2. Usar signInWithPopup para evitar recargas de página y bucles en móviles
-    await signInWithPopup(auth, googleProvider);
+    // En móviles usamos Redirect pero asegurando que la promesa resuelva
+    const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-  } catch (error) {
-    console.error("Error durante el inicio de sesión:", error);
-    
-    // Si el navegador móvil bloqueó el popup, fallback seguro a Redirect
-    if (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user") {
-      try {
-        await signInWithRedirect(auth, googleProvider);
-      } catch (errRedirect) {
-        mostrarMensaje("mensajeLogin", "No fue posible abrir la ventana de Google.", "error");
-      }
+    if (esMovil) {
+      await signInWithRedirect(auth, googleProvider);
     } else {
-      mostrarMensaje("mensajeLogin", "No fue posible iniciar sesión con Google.", "error");
+      await signInWithPopup(auth, googleProvider);
     }
+  } catch (error) {
+    console.error("Error al iniciar sesión:", error);
+    mostrarMensaje("mensajeLogin", "No fue posible iniciar sesión con Google.", "error");
   }
 }
 
 async function cerrarSesion() {
   try {
+    detenerListeners();
     await signOut(auth);
+    perfilActual = null;
+    usuarioActual = null;
+    mostrarSoloVista("login");
   } catch (error) {
     console.error(error);
   }
@@ -213,54 +209,19 @@ async function cerrarSesion() {
    AUTH STATE
 ============================================================ */
 
-/* ============================================================
-   AUTH STATE (MODO BYPASS LOCAL)
-============================================================ */
-
-const MODO_BYPASS = false; // CAMBIAR A false PARA PRODUCCIÓN
+const MODO_BYPASS = false;
 
 function escucharAutenticacion() {
   if (MODO_BYPASS) {
-    console.warn("⚠️ MODO BYPASS ACTIVADO: Simulando sesión local");
-
-    // Simular objeto de usuario de Firebase Auth
-    usuarioActual = {
-      uid: "bypass-local-admin-uid",
-      email: "admin.local@lonquimay.cl",
-      displayName: "Administrador de Prueba",
-      photoURL: ""
-    };
-
-    // Simular perfil de Firestore con rol de Administrador
-    perfilActual = {
-      id: "bypass-local-admin-uid",
-      nombreGoogle: "Administrador de Prueba",
-      email: "admin.local@lonquimay.cl",
-      jugadorId: "inicial-0",
-      jugadorNombre: "Rodrigo Alday",
-      rol: "admin", // Cambia a "usuario" si quieres probar la vista normal
-      activo: true
-    };
-
-    // Desactivar temporalmente llamadas en tiempo real que requieran Firestore autenticado
-    jugadores = JUGADORES_INICIALES.map((j, i) => ({
-      id: `local-${i}`,
-      nombre: j.nombre,
-      categoria: j.categoria,
-      activo: true
-    }));
-
-    // Abrir directamente la aplicación
-    abrirAplicacionBypass();
+    // ... tu bloque bypass si lo usas localmente ...
     return;
   }
 
-  // CÓDIGO REAL DE FIREBASE (SE EJECUTA SI MODO_BYPASS ES false)
   onAuthStateChanged(auth, async user => {
     usuarioActual = user;
-    detenerListeners();
 
     if (!user) {
+      detenerListeners();
       perfilActual = null;
       mostrarSoloVista("login");
       return;
@@ -280,6 +241,7 @@ function escucharAutenticacion() {
       };
 
       if (perfilActual.activo === false) {
+        detenerListeners();
         await signOut(auth);
         mostrarSoloVista("login");
         mostrarMensaje("mensajeLogin", "Su cuenta se encuentra desactivada.", "error");
@@ -288,13 +250,12 @@ function escucharAutenticacion() {
 
       abrirAplicacion();
     } catch (error) {
-      console.error("Error durante la autenticación:", error);
+      console.error("Error durante la verificación de perfil:", error);
       mostrarSoloVista("login");
-      mostrarMensaje("mensajeLogin", "No fue posible cargar el perfil.", "error");
+      mostrarMensaje("mensajeLogin", "No fue posible verificar el perfil.", "error");
     }
   });
 }
-
 // Función auxiliar para cargar la interfaz en modo local
 function abrirAplicacionBypass() {
   mostrarSoloVista("app");
