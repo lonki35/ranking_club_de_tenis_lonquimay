@@ -2,7 +2,10 @@
    FIREBASE SDK
 ============================================================ */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
 import {
   getAuth,
   GoogleAuthProvider,
@@ -15,6 +18,7 @@ import {
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
 import {
   getFirestore,
   collection,
@@ -111,15 +115,12 @@ const el = id => document.getElementById(id);
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  // 1. Manejar el regreso del login en móviles cuando usa Redirect
   try {
     await getRedirectResult(auth);
   } catch (error) {
-    console.error("Error al procesar el retorno del login:", error);
-    mostrarMensaje("mensajeLogin", "No fue posible autenticar con Google.", "error");
+    console.error("Error redirect login:", error);
   }
 
-  // 2. Todos tus listeners de botones y formularios intactos
   el("btnGoogle").addEventListener("click", loginGoogle);
   el("btnCerrarSesion").addEventListener("click", cerrarSesion);
   el("btnCancelarPerfil").addEventListener("click", cerrarSesion);
@@ -150,47 +151,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   el("btnCancelarEliminarJugador").addEventListener("click", cerrarModalEliminarJugador);
   el("btnConfirmarEliminarJugador").addEventListener("click", ejecutarEliminacionJugador);
-  // Dentro de document.addEventListener("DOMContentLoaded", ...) agrega:
-el("btnLimpiarAuditoria")?.addEventListener("click", limpiarHistorialAuditoria);
 
-// Función para vaciar la colección de auditoría
-async function limpiarHistorialAuditoria() {
-  if (!esAdmin()) return;
-
-  const confirmar = window.confirm(
-    "¿Está seguro de que desea ELIMINAR TODO el historial de auditoría? Esta acción borrará los registros permanentemente."
-  );
-
-  if (!confirmar) return;
-
-  try {
-    const snapshot = await getDocs(collection(db, "auditoria"));
-    
-    if (snapshot.empty) {
-      window.alert("El historial de auditoría ya está vacío.");
-      return;
-    }
-
-    const batch = writeBatch(db);
-    snapshot.docs.forEach(docSnap => {
-      batch.delete(doc(db, "auditoria", docSnap.id));
-    });
-
-    await batch.commit();
-    window.alert("Historial de auditoría eliminado correctamente.");
-  } catch (error) {
-    console.error("Error al limpiar auditoría:", error);
-    window.alert("Ocurrió un error al intentar borrar el historial de auditoría.");
-  }
-}
+  el("btnLimpiarAuditoria")?.addEventListener("click", limpiarHistorialAuditoria);
 
   prepararMarcadores();
   el("fecha").value = fechaActual();
 
-  // 3. Escuchar el estado del usuario en Firebase
   escucharAutenticacion();
 
 });
+
 
 /* ============================================================
    GOOGLE LOGIN / LOGOUT
@@ -198,9 +168,21 @@ async function limpiarHistorialAuditoria() {
 
 async function loginGoogle() {
   ocultarMensaje("mensajeLogin");
+
+  const recordar = el("chkRecordarSesion") ? el("chkRecordarSesion").checked : true;
+  const modoPersistencia = recordar ? browserLocalPersistence : browserSessionPersistence;
+
   try {
+    await setPersistence(auth, modoPersistencia);
     googleProvider.setCustomParameters({ prompt: "select_account" });
-    await signInWithPopup(auth, googleProvider);
+
+    const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if (esMovil) {
+      await signInWithRedirect(auth, googleProvider);
+    } else {
+      await signInWithPopup(auth, googleProvider);
+    }
   } catch (error) {
     console.error(error);
     mostrarMensaje("mensajeLogin", "No fue posible iniciar sesión con Google.", "error");
@@ -246,6 +228,7 @@ function escucharAutenticacion() {
 
       if (perfilActual.activo === false) {
         await signOut(auth);
+        mostrarSoloVista("login");
         mostrarMensaje("mensajeLogin", "Su cuenta se encuentra desactivada.", "error");
         return;
       }
@@ -253,6 +236,7 @@ function escucharAutenticacion() {
       abrirAplicacion();
     } catch (error) {
       console.error("Error durante la autenticación:", error);
+      mostrarSoloVista("login");
       mostrarMensaje("mensajeLogin", "No fue posible cargar el perfil.", "error");
     }
   });
@@ -766,7 +750,6 @@ async function actualizarPartido(datos, resultado) {
   cancelarEdicion();
 }
 
-// Eliminación directa de partido
 async function eliminarPartidoDirecto(idFirestore, numeroRegistro) {
   if (!esAdmin()) return;
 
@@ -875,7 +858,6 @@ function renderPartidos() {
       tr.appendChild(td);
     });
 
-    // Columna de Acciones para Administrador
     if (esAdmin()) {
       const tdAcciones = document.createElement("td");
       tdAcciones.style.whiteSpace = "nowrap";
@@ -1126,7 +1108,7 @@ function descargarRankingExcel() {
 
 
 /* ============================================================
-   ADMINISTRACIÓN DE JUGADORES (CREAR, EDITAR, ELIMINAR)
+   ADMINISTRACIÓN DE JUGADORES
 ============================================================ */
 
 function alternarAdministracionJugadores() {
@@ -1202,13 +1184,11 @@ function renderJugadoresAdmin() {
   jugadores.forEach(j => {
     const tr = document.createElement("tr");
 
-    // Nombre
     const tdNombre = document.createElement("td");
     const inputNombre = document.createElement("input");
     inputNombre.value = j.nombre;
     tdNombre.appendChild(inputNombre);
 
-    // Categoría
     const tdCategoria = document.createElement("td");
     const selectCategoria = document.createElement("select");
     for (let cat = 1; cat <= 5; cat++) {
@@ -1218,11 +1198,9 @@ function renderJugadoresAdmin() {
     }
     tdCategoria.appendChild(selectCategoria);
 
-    // Estado
     const tdEstado = document.createElement("td");
     tdEstado.textContent = j.activo === false ? "Inactivo" : "Activo";
 
-    // Acciones
     const tdAcciones = document.createElement("td");
     tdAcciones.style.whiteSpace = "nowrap";
 
@@ -1258,13 +1236,11 @@ function renderJugadoresAdmin() {
   });
 }
 
-// Ventana y lógica para eliminación de jugadores y gestión de historial
 async function iniciarEliminacionJugador(jugador) {
   if (!esAdmin()) return;
 
   jugadorAEliminar = jugador;
 
-  // Buscar partidos asociados
   const partidosAsociados = partidos.filter(
     p => p.jugadorAId === jugador.id || p.jugadorBId === jugador.id
   );
@@ -1288,7 +1264,6 @@ async function ejecutarEliminacionJugador() {
   const opcion = document.querySelector('input[name="opcionHistorial"]:checked')?.value || "conservar";
 
   try {
-    // 1. Obtener partidos en Firestore donde participa el jugador
     const qA = query(collection(db, "partidos"), where("jugadorAId", "==", jugador.id));
     const qB = query(collection(db, "partidos"), where("jugadorBId", "==", jugador.id));
     const [snapA, snapB] = await Promise.all([getDocs(qA), getDocs(qB)]);
@@ -1304,7 +1279,6 @@ async function ejecutarEliminacionJugador() {
       }
     });
 
-    // 2. Aplicar decisión sobre los partidos
     if (opcion === "eliminar") {
       docsPartidos.forEach(docSnap => {
         batch.delete(doc(db, "partidos", docSnap.id));
@@ -1319,12 +1293,9 @@ async function ejecutarEliminacionJugador() {
         });
       });
     }
-    // Si la opción es "conservar", no se tocan los partidos en absoluto.
 
-    // 3. Eliminar el documento del jugador
     batch.delete(doc(db, "jugadores", jugador.id));
 
-    // 4. Desvincular cualquier usuario que tenga asociado este jugador
     const qUsuarios = query(collection(db, "usuarios"), where("jugadorId", "==", jugador.id));
     const snapUsuarios = await getDocs(qUsuarios);
     snapUsuarios.forEach(uDoc => {
@@ -1336,7 +1307,6 @@ async function ejecutarEliminacionJugador() {
 
     await batch.commit();
 
-    // 5. Registrar auditoría
     await addDoc(collection(db, "auditoria"), {
       accion: "ELIMINACIÓN DE JUGADOR",
       numeroRegistro: `Jugador: ${jugador.nombre}`,
@@ -1349,7 +1319,7 @@ async function ejecutarEliminacionJugador() {
     cerrarModalEliminarJugador();
     mostrarMensaje("mensajeJugador", `Jugador "${jugador.nombre}" eliminado con éxito.`, "ok");
   } catch (error) {
-    console.error("Error eliminando jugador y gestionando su historial:", error);
+    console.error("Error eliminando jugador:", error);
     window.alert("Ocurrió un error al intentar eliminar el jugador.");
   }
 }
@@ -1406,7 +1376,6 @@ function renderUsuariosAdmin() {
     check.checked = u.activo !== false;
     tdActivo.appendChild(check);
 
-    // Columna de Acciones (Guardar y Eliminar)
     const tdAcciones = document.createElement("td");
     tdAcciones.style.whiteSpace = "nowrap";
 
@@ -1437,17 +1406,17 @@ function renderUsuariosAdmin() {
       }
 
       const confirmar = window.confirm(
-        `¿Desea eliminar el perfil del usuario ${u.email}? El usuario perderá el acceso a la aplicación.`
+        `¿Desea eliminar el perfil de ${u.email}? El usuario perderá el acceso a la aplicación.`
       );
 
       if (!confirmar) return;
 
       try {
         await deleteDoc(doc(db, "usuarios", u.id));
-        window.alert("Usuario eliminado de la base de datos.");
+        window.alert("Perfil de usuario eliminado.");
       } catch (error) {
-        console.error("Error al eliminar usuario:", error);
-        window.alert("No fue posible eliminar el usuario.");
+        console.error("Error eliminando usuario:", error);
+        window.alert("Ocurrió un error al intentar eliminar la cuenta.");
       }
     };
 
@@ -1456,6 +1425,7 @@ function renderUsuariosAdmin() {
     tbody.appendChild(tr);
   });
 }
+
 
 /* ============================================================
    AUDITORÍA
@@ -1485,6 +1455,33 @@ function escucharAuditoria() {
       tbody.appendChild(tr);
     });
   });
+}
+
+async function limpiarHistorialAuditoria() {
+  if (!esAdmin()) return;
+
+  const confirmar = window.confirm(
+    "¿Está seguro de que desea ELIMINAR TODO el historial de auditoría? Esta acción no se puede deshacer."
+  );
+
+  if (!confirmar) return;
+
+  try {
+    const snapshot = await getDocs(collection(db, "auditoria"));
+    
+    if (snapshot.empty) {
+      window.alert("El historial de auditoría ya está vacío.");
+      return;
+    }
+
+    const promesasBorrado = snapshot.docs.map(docSnap => deleteDoc(doc(db, "auditoria", docSnap.id)));
+    await Promise.all(promesasBorrado);
+
+    window.alert("Historial de auditoría limpiado correctamente.");
+  } catch (error) {
+    console.error("Error al limpiar auditoría:", error);
+    window.alert("No fue posible borrar el historial de auditoría.");
+  }
 }
 
 
