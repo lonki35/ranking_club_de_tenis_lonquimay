@@ -535,8 +535,89 @@ tbody tr:hover {
   }
 }
 
-/* Acciones administrativas del registro maestro */
-#tablaPartidos td:last-child {
-  white-space: nowrap;
-  min-width: 155px;
+/* =========================================================
+   BOTONES ADICIONALES Y MODALES
+========================================================= */
+
+.btn-warning {
+  background: #d9822b;
+  color: white;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 15px;
+}
+
+.modal-card {
+  background: white;
+  max-width: 520px;
+  width: 100%;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-card h3 {
+  margin-top: 0;
+  color: var(--danger);
+}
+
+.modal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.modal-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-option input {
+  width: auto;
+  margin-top: 4px;
+}
+
+.modal-option:hover {
+  background: #f8fafb;
+}
+
+.danger-option {
+  border-color: #f1b0b0;
+  background: #fff8f8;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 }
