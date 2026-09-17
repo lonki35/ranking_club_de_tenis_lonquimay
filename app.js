@@ -2,18 +2,19 @@
    FIREBASE SDK
 ============================================================ */
 
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-
 import {
   getFirestore,
   collection,
@@ -108,8 +109,17 @@ const el = id => document.getElementById(id);
    INICIO
 ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
+  // 1. Manejar el regreso del login en móviles cuando usa Redirect
+  try {
+    await getRedirectResult(auth);
+  } catch (error) {
+    console.error("Error al procesar el retorno del login:", error);
+    mostrarMensaje("mensajeLogin", "No fue posible autenticar con Google.", "error");
+  }
+
+  // 2. Todos tus listeners de botones y formularios intactos
   el("btnGoogle").addEventListener("click", loginGoogle);
   el("btnCerrarSesion").addEventListener("click", cerrarSesion);
   el("btnCancelarPerfil").addEventListener("click", cerrarSesion);
@@ -144,10 +154,10 @@ document.addEventListener("DOMContentLoaded", () => {
   prepararMarcadores();
   el("fecha").value = fechaActual();
 
+  // 3. Escuchar el estado del usuario en Firebase
   escucharAutenticacion();
 
 });
-
 
 /* ============================================================
    GOOGLE LOGIN / LOGOUT
