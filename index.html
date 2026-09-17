@@ -1,1200 +1,686 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Club de Tenis Lonquimay</title>
 
-  <title>Ranking Club de Tenis Lonquimay</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-  <link rel="stylesheet" href="styles_mejorado.css">
-</head>
-
-
-<body>
-
-<!-- =====================================================
+  <body>
+    <!-- =====================================================
      CABECERA
 ===================================================== -->
 
-<header class="topbar">
+    <header class="topbar">
+      <div class="wrap topbar-content">
+        <div>
+          <h1>Club de Tenis Lonquimay</h1>
+          <p>Ranking y registro oficial de partidos</p>
+        </div>
 
-  <div class="wrap topbar-content">
+        <!-- USUARIO CONECTADO -->
 
-    <div>
-      <h1>Club de Tenis Lonquimay</h1>
-      <p>Ranking y registro oficial de partidos</p>
-    </div>
+        <div id="zonaUsuario" class="user-box hidden">
+          <img id="fotoUsuario" class="avatar" alt="Usuario" />
 
+          <div>
+            <strong id="nombreUsuario"></strong>
+            <div id="correoUsuario" class="small-text"></div>
+          </div>
 
-    <!-- USUARIO CONECTADO -->
+          <span id="rolActual" class="badge"></span>
 
-    <div id="zonaUsuario" class="user-box hidden">
-
-      <img
-        id="fotoUsuario"
-        class="avatar"
-        alt="Usuario"
-      >
-
-      <div>
-        <strong id="nombreUsuario"></strong>
-        <div id="correoUsuario" class="small-text"></div>
+          <button id="btnCerrarSesion" class="btn btn-light btn-small">
+            Cerrar sesión
+          </button>
+        </div>
       </div>
+    </header>
 
-      <span id="rolActual" class="badge"></span>
-
-      <button
-        id="btnCerrarSesion"
-        class="btn btn-light btn-small"
-      >
-        Cerrar sesión
-      </button>
-
-    </div>
-
-  </div>
-
-</header>
-
-
-
-<!-- =====================================================
+    <!-- =====================================================
      LOGIN GOOGLE
 ===================================================== -->
 
-<main id="vistaLogin" class="auth-wrapper">
+    <main id="vistaLogin" class="auth-wrapper">
+      <section class="auth-card">
+        <h2>Ingreso al Ranking</h2>
 
-  <section class="auth-card">
+        <p class="center muted">
+          Para utilizar la aplicación debe identificarse con una cuenta de
+          Google.
+        </p>
 
-    <h2>Ingreso al Ranking</h2>
+        <button id="btnGoogle" class="btn-google">
+          <span class="google-letter"> G </span>
 
-    <p class="center muted">
-      Para utilizar la aplicación debe identificarse
-      con una cuenta de Google.
-    </p>
+          Continuar con Google
+        </button>
 
-    <button id="btnGoogle" class="btn-google">
+        <div id="mensajeLogin" class="message hidden"></div>
+      </section>
+    </main>
 
-      <span class="google-letter">
-        G
-      </span>
-
-      Continuar con Google
-
-    </button>
-
-    <div
-      id="mensajeLogin"
-      class="message hidden"
-    ></div>
-
-  </section>
-
-</main>
-
-
-
-<!-- =====================================================
+    <!-- =====================================================
      PRIMER INGRESO / CREAR PERFIL
 ===================================================== -->
 
-<main
-  id="vistaCrearPerfil"
-  class="auth-wrapper hidden"
->
+    <main id="vistaCrearPerfil" class="auth-wrapper hidden">
+      <section class="auth-card">
+        <h2>Crear mi perfil</h2>
 
-  <section class="auth-card">
+        <p>
+          Cuenta:
+          <strong id="correoNuevoPerfil"></strong>
+        </p>
 
-    <h2>Crear mi perfil</h2>
+        <label for="jugadorNuevoPerfil"> Seleccione quién es usted </label>
 
-    <p>
-      Cuenta:
-      <strong id="correoNuevoPerfil"></strong>
-    </p>
+        <select id="jugadorNuevoPerfil">
+          <option value="">Seleccione jugador</option>
+        </select>
 
+        <p class="note">
+          Esta asociación identifica al jugador que está ingresando resultados.
+          Seleccione únicamente su propio nombre.
+        </p>
 
-    <label for="jugadorNuevoPerfil">
-      Seleccione quién es usted
-    </label>
+        <button id="btnCrearPerfil" class="btn btn-primary full">
+          Crear mi perfil
+        </button>
 
-    <select id="jugadorNuevoPerfil">
+        <button id="btnCancelarPerfil" class="btn btn-light full">
+          Cerrar sesión
+        </button>
 
-      <option value="">
-        Seleccione jugador
-      </option>
+        <div id="mensajePerfil" class="message hidden"></div>
+      </section>
+    </main>
 
-    </select>
-
-
-    <p class="note">
-
-      Esta asociación identifica al jugador que está
-      ingresando resultados.
-
-      Seleccione únicamente su propio nombre.
-
-    </p>
-
-
-    <button
-      id="btnCrearPerfil"
-      class="btn btn-primary full"
-    >
-      Crear mi perfil
-    </button>
-
-
-    <button
-      id="btnCancelarPerfil"
-      class="btn btn-light full"
-    >
-      Cerrar sesión
-    </button>
-
-
-    <div
-      id="mensajePerfil"
-      class="message hidden"
-    ></div>
-
-  </section>
-
-</main>
-
-
-
-<!-- =====================================================
+    <!-- =====================================================
      APLICACIÓN PRINCIPAL
 ===================================================== -->
 
-<main
-  id="vistaAplicacion"
-  class="wrap hidden"
->
-
-
-<!-- =====================================================
+    <main id="vistaAplicacion" class="wrap hidden">
+      <!-- =====================================================
      REGISTRAR PARTIDO
 ===================================================== -->
 
-<section class="card">
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>Registrar partido</h2>
 
+            <p id="textoPermisoPartido">
+              Solo el ganador autenticado puede enviar el resultado.
+            </p>
+          </div>
 
-  <div class="section-title">
+          <span id="estadoConexion" class="badge badge-warn">
+            Conectando...
+          </span>
+        </div>
 
-    <div>
+        <!-- MODO EDICIÓN -->
 
-      <h2>
-        Registrar partido
-      </h2>
+        <div id="modoEdicion" class="edit-banner hidden">
+          <strong>
+            Editando partido N.º
 
-      <p id="textoPermisoPartido">
-        Solo el ganador autenticado puede enviar el resultado.
-      </p>
+            <span id="numeroEditando"></span>
+          </strong>
 
-    </div>
+          <button id="btnCancelarEdicion" class="btn btn-light btn-small">
+            Cancelar edición
+          </button>
+        </div>
 
+        <!-- REGLAS DE PUNTUACIÓN -->
 
-    <span
-      id="estadoConexion"
-      class="badge badge-warn"
-    >
-      Conectando...
-    </span>
+        <div class="rules">
+          <strong>Puntuación:</strong>
 
-  </div>
+          victoria contra categoría superior =
+          <strong>10 puntos</strong> · misma categoría =
+          <strong>7 puntos</strong> · categoría inferior =
+          <strong>5 puntos</strong> · derrota = <strong>1 punto</strong>.
+        </div>
 
+        <!-- FECHA Y NÚMERO -->
 
+        <div class="grid-2">
+          <div>
+            <label for="fecha"> Fecha </label>
 
-  <!-- MODO EDICIÓN -->
+            <input type="date" id="fecha" />
+          </div>
 
-  <div
-    id="modoEdicion"
-    class="edit-banner hidden"
-  >
+          <div>
+            <label> N.º de registro </label>
 
-    <strong>
+            <input
+              id="numeroRegistroVista"
+              value="Se asignará automáticamente"
+              disabled
+            />
+          </div>
+        </div>
 
-      Editando partido N.º
-
-      <span id="numeroEditando"></span>
-
-    </strong>
-
-
-    <button
-      id="btnCancelarEdicion"
-      class="btn btn-light btn-small"
-    >
-      Cancelar edición
-    </button>
-
-  </div>
-
-
-
-  <!-- REGLAS DE PUNTUACIÓN -->
-
-  <div class="rules">
-
-    <strong>Puntuación:</strong>
-
-    victoria contra categoría superior =
-    <strong>10 puntos</strong> ·
-
-    misma categoría =
-    <strong>7 puntos</strong> ·
-
-    categoría inferior =
-    <strong>5 puntos</strong> ·
-
-    derrota =
-    <strong>1 punto</strong>.
-
-  </div>
-
-
-
-  <!-- FECHA Y NÚMERO -->
-
-  <div class="grid-2">
-
-
-    <div>
-
-      <label for="fecha">
-        Fecha
-      </label>
-
-      <input
-        type="date"
-        id="fecha"
-      >
-
-    </div>
-
-
-
-    <div>
-
-      <label>
-        N.º de registro
-      </label>
-
-      <input
-        id="numeroRegistroVista"
-        value="Se asignará automáticamente"
-        disabled
-      >
-
-    </div>
-
-
-  </div>
-
-
-
-  <!-- =================================================
+        <!-- =================================================
        MARCADOR
   ================================================= -->
 
-  <div class="table-scroll">
+        <div class="table-scroll">
+          <table class="score-table">
+            <thead>
+              <tr>
+                <th>Jugador</th>
+
+                <th>Categoría</th>
+
+                <th>Set 1</th>
+
+                <th>Set 2</th>
+
+                <th>Set 3</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <!-- JUGADOR A -->
+
+              <tr>
+                <td>
+                  <select id="jugadorA">
+                    <option value="">Jugador A</option>
+                  </select>
+                </td>
+
+                <td>
+                  <input id="categoriaA" readonly />
+                </td>
+
+                <td>
+                  <select id="set1A"></select>
+                </td>
+
+                <td>
+                  <select id="set2A"></select>
+                </td>
+
+                <td>
+                  <select id="set3A"></select>
+                </td>
+              </tr>
+
+              <!-- JUGADOR B -->
+
+              <tr>
+                <td>
+                  <select id="jugadorB">
+                    <option value="">Jugador B</option>
+                  </select>
+                </td>
+
+                <td>
+                  <input id="categoriaB" readonly />
+                </td>
+
+                <td>
+                  <select id="set1B"></select>
+                </td>
+
+                <td>
+                  <select id="set2B"></select>
+                </td>
+
+                <td>
+                  <select id="set3B"></select>
+                </td>
+              </tr>
+
+              <!-- TIPO TERCER SET -->
+
+              <tr>
+                <td colspan="2">
+                  <strong> Tipo de tercer set </strong>
+                </td>
+
+                <td colspan="2"></td>
+
+                <td>
+                  <select id="tipoSet3">
+                    <option value="normal">Set normal</option>
+
+                    <option value="super">Super tie-break</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="note">
+          Set 1 y Set 2: resultados entre 0 y 7. Tercer set normal: resultados
+          entre 0 y 7. Super tie-break: resultados entre 0 y 21.
+        </p>
+
+        <!-- BOTONES PARTIDO -->
+
+        <div class="actions">
+          <button id="btnGuardarPartido" class="btn btn-primary">
+            Guardar partido
+          </button>
 
-    <table class="score-table">
+          <button id="btnLimpiar" class="btn btn-light">Limpiar</button>
 
+          <button id="btnAnularPartido" class="btn btn-warning hidden">
+            Anular partido
+          </button>
 
-      <thead>
+          <button id="btnEliminarPartido" class="btn btn-danger hidden">
+            Eliminar partido
+          </button>
+        </div>
 
-        <tr>
+        <div id="mensaje" class="message hidden"></div>
+      </section>
 
-          <th>Jugador</th>
-
-          <th>Categoría</th>
-
-          <th>Set 1</th>
-
-          <th>Set 2</th>
-
-          <th>Set 3</th>
-
-        </tr>
-
-      </thead>
-
-
-
-      <tbody>
-
-
-        <!-- JUGADOR A -->
-
-        <tr>
-
-          <td>
-
-            <select id="jugadorA">
-
-              <option value="">
-                Jugador A
-              </option>
-
-            </select>
-
-          </td>
-
-
-          <td>
-
-            <input
-              id="categoriaA"
-              readonly
-            >
-
-          </td>
-
-
-          <td>
-
-            <select id="set1A"></select>
-
-          </td>
-
-
-          <td>
-
-            <select id="set2A"></select>
-
-          </td>
-
-
-          <td>
-
-            <select id="set3A"></select>
-
-          </td>
-
-        </tr>
-
-
-
-        <!-- JUGADOR B -->
-
-        <tr>
-
-          <td>
-
-            <select id="jugadorB">
-
-              <option value="">
-                Jugador B
-              </option>
-
-            </select>
-
-          </td>
-
-
-          <td>
-
-            <input
-              id="categoriaB"
-              readonly
-            >
-
-          </td>
-
-
-          <td>
-
-            <select id="set1B"></select>
-
-          </td>
-
-
-          <td>
-
-            <select id="set2B"></select>
-
-          </td>
-
-
-          <td>
-
-            <select id="set3B"></select>
-
-          </td>
-
-        </tr>
-
-
-
-        <!-- TIPO TERCER SET -->
-
-        <tr>
-
-          <td colspan="2">
-
-            <strong>
-              Tipo de tercer set
-            </strong>
-
-          </td>
-
-
-          <td colspan="2"></td>
-
-
-          <td>
-
-            <select id="tipoSet3">
-
-              <option value="normal">
-                Set normal
-              </option>
-
-              <option value="super">
-                Super tie-break
-              </option>
-
-            </select>
-
-          </td>
-
-        </tr>
-
-
-      </tbody>
-
-    </table>
-
-  </div>
-
-
-
-  <p class="note">
-
-    Set 1 y Set 2: resultados entre 0 y 7.
-
-    Tercer set normal: resultados entre 0 y 7.
-
-    Super tie-break: resultados entre 0 y 21.
-
-  </p>
-
-
-
-  <!-- BOTONES PARTIDO -->
-
-  <div class="actions">
-
-
-    <button
-      id="btnGuardarPartido"
-      class="btn btn-primary"
-    >
-      Guardar partido
-    </button>
-
-
-    <button
-      id="btnLimpiar"
-      class="btn btn-light"
-    >
-      Limpiar
-    </button>
-
-
-    <button
-      id="btnAnularPartido"
-      class="btn btn-danger hidden"
-    >
-      Anular partido
-    </button>
-
-
-  </div>
-
-
-  <div
-    id="mensaje"
-    class="message hidden"
-  ></div>
-
-
-</section>
-
-
-
-<!-- =====================================================
+      <!-- =====================================================
      BUSCAR / CORREGIR PARTIDO
 ===================================================== -->
 
-<section class="card">
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>Buscar / corregir partido</h2>
 
+            <p>
+              Busque un partido utilizando su número correlativo de registro.
+            </p>
+          </div>
+        </div>
 
-  <div class="section-title">
+        <div class="lookup-row">
+          <div>
+            <label for="buscarRegistro"> N.º de registro </label>
 
-    <div>
+            <input
+              type="number"
+              id="buscarRegistro"
+              min="1"
+              placeholder="Ej.: 25"
+            />
+          </div>
 
-      <h2>
-        Buscar / corregir partido
-      </h2>
+          <div>
+            <button id="btnBuscarRegistro" class="btn btn-primary">
+              Buscar
+            </button>
+          </div>
+        </div>
 
-      <p>
-        Busque un partido utilizando su número
-        correlativo de registro.
-      </p>
+        <div id="resultadoBusqueda" class="lookup-result hidden"></div>
+      </section>
 
-    </div>
-
-  </div>
-
-
-
-  <div class="lookup-row">
-
-
-    <div>
-
-      <label for="buscarRegistro">
-
-        N.º de registro
-
-      </label>
-
-
-      <input
-        type="number"
-        id="buscarRegistro"
-        min="1"
-        placeholder="Ej.: 25"
-      >
-
-    </div>
-
-
-
-    <div>
-
-      <button
-        id="btnBuscarRegistro"
-        class="btn btn-primary"
-      >
-        Buscar
-      </button>
-
-    </div>
-
-
-  </div>
-
-
-
-  <div
-    id="resultadoBusqueda"
-    class="lookup-result hidden"
-  ></div>
-
-
-</section>
-
-
-
-<!-- =====================================================
+      <!-- =====================================================
      RANKING
 ===================================================== -->
 
-<section class="card">
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>Ranking Oficial</h2>
 
+            <p>
+              Se recalcula automáticamente utilizando los partidos vigentes.
+            </p>
+          </div>
 
-  <div class="section-title">
+          <button id="btnDescargarRanking" class="btn btn-success">
+            Descargar Ranking Excel (.xlsx)
+          </button>
+        </div>
 
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Pos.</th>
 
-    <div>
+                <th>Jugador</th>
 
-      <h2>
-        Ranking Oficial
-      </h2>
+                <th>Cat.</th>
 
-      <p>
-        Se recalcula automáticamente
-        utilizando los partidos vigentes.
-      </p>
+                <th>Puntos</th>
 
-    </div>
+                <th>PJ</th>
 
+                <th>PG</th>
 
+                <th>PP</th>
 
-    <button
-      id="btnDescargarRanking"
-      class="btn btn-success"
-    >
-      Descargar Ranking Excel (.xlsx)
-    </button>
+                <th>Sets ganados</th>
 
+                <th>Juegos ganados</th>
+              </tr>
+            </thead>
 
-  </div>
+            <tbody id="tablaRanking"></tbody>
+          </table>
+        </div>
+      </section>
 
-
-
-  <div class="table-scroll">
-
-    <table>
-
-
-      <thead>
-
-        <tr>
-
-          <th>Pos.</th>
-
-          <th>Jugador</th>
-
-          <th>Cat.</th>
-
-          <th>Puntos</th>
-
-          <th>PJ</th>
-
-          <th>PG</th>
-
-          <th>PP</th>
-
-          <th>Sets ganados</th>
-
-          <th>Juegos ganados</th>
-
-        </tr>
-
-      </thead>
-
-
-
-      <tbody id="tablaRanking"></tbody>
-
-
-    </table>
-
-  </div>
-
-
-</section>
-
-
-
-<!-- =====================================================
+      <!-- =====================================================
      REGISTRO MAESTRO
 ===================================================== -->
 
-<section class="card">
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>Registro maestro de partidos</h2>
 
+            <p>Historial oficial de resultados registrados.</p>
+          </div>
+        </div>
 
-  <div class="section-title">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>N.º</th>
 
-    <div>
+                <th>Fecha</th>
 
-      <h2>
-        Registro maestro de partidos
-      </h2>
+                <th>Jugador A</th>
 
-      <p>
-        Historial oficial de resultados registrados.
-      </p>
+                <th>Cat.</th>
 
-    </div>
+                <th>Resultado</th>
 
-  </div>
+                <th>Jugador B</th>
 
+                <th>Cat.</th>
 
+                <th>Ganador</th>
 
-  <div class="table-scroll">
+                <th>Puntos ganador</th>
 
+                <th>Informado por</th>
 
-    <table>
+                <th>Estado</th>
 
+                <th id="thAccionesPartidos" class="hidden">Acciones</th>
+              </tr>
+            </thead>
 
-      <thead>
+            <tbody id="tablaPartidos"></tbody>
+          </table>
+        </div>
+      </section>
 
-        <tr>
-
-          <th>N.º</th>
-
-          <th>Fecha</th>
-
-          <th>Jugador A</th>
-
-          <th>Cat.</th>
-
-          <th>Resultado</th>
-
-          <th>Jugador B</th>
-
-          <th>Cat.</th>
-
-          <th>Ganador</th>
-
-          <th>Puntos ganador</th>
-
-          <th>Informado por</th>
-
-          <th>Estado</th>
-
-          <th>Acciones</th>
-
-        </tr>
-
-      </thead>
-
-
-
-      <tbody id="tablaPartidos"></tbody>
-
-
-    </table>
-
-
-  </div>
-
-
-</section>
-
-
-
-<!-- =====================================================
+      <!-- =====================================================
      PANEL ADMINISTRADOR
 ===================================================== -->
 
-<section
-  id="panelAdministrador"
-  class="hidden"
->
+      <section id="panelAdministrador" class="hidden">
+        <div class="admin-title">PANEL DE ADMINISTRACIÓN</div>
 
-
-  <div class="admin-title">
-
-    PANEL DE ADMINISTRACIÓN
-
-  </div>
-
-
-
-  <!-- ===================================================
+        <!-- ===================================================
        ADMINISTRACIÓN DE JUGADORES
   =================================================== -->
 
-  <section class="card admin-card">
+        <section class="card admin-card">
+          <div class="section-title">
+            <div>
+              <h2>Administración de jugadores</h2>
+
+              <p>
+                Crear jugadores, modificar categorías, eliminar y administrar su
+                estado. Esta función está disponible exclusivamente para
+                administradores.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              id="btnMostrarAdminJugadores"
+              class="btn btn-primary"
+            >
+              Administrar jugadores
+            </button>
+          </div>
+
+          <!-- CONTENIDO ADMIN JUGADORES -->
+
+          <div id="contenidoAdminJugadores" class="hidden">
+            <!-- CREAR JUGADOR -->
+
+            <div class="admin-subtitle">
+              <h3>Crear nuevo jugador</h3>
+            </div>
+
+            <form id="formJugador" class="grid-player">
+              <div>
+                <label for="nuevoNombre"> Nombre del jugador </label>
+
+                <input
+                  id="nuevoNombre"
+                  maxlength="80"
+                  autocomplete="off"
+                  placeholder="Nombre y apellido"
+                  required
+                />
+              </div>
+
+              <div>
+                <label for="nuevaCategoria"> Categoría </label>
+
+                <select id="nuevaCategoria" required>
+                  <option value="">Seleccione</option>
+
+                  <option value="1">Categoría 1</option>
+
+                  <option value="2">Categoría 2</option>
+
+                  <option value="3">Categoría 3</option>
+
+                  <option value="4">Categoría 4</option>
+
+                  <option value="5">Categoría 5</option>
+                </select>
+              </div>
+
+              <div>
+                <button type="submit" class="btn btn-success">
+                  + Crear jugador
+                </button>
+              </div>
+            </form>
+
+            <div id="mensajeJugador" class="message hidden"></div>
+
+            <!-- LISTADO JUGADORES -->
+
+            <div class="admin-subtitle">
+              <h3>Jugadores registrados</h3>
+
+              <p class="note">
+                Desde esta tabla el administrador puede modificar la categoría,
+                nombre, estado o eliminar al jugador junto a la gestión de sus
+                partidos.
+              </p>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Jugador</th>
+
+                    <th>Categoría</th>
+
+                    <th>Estado</th>
+
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+
+                <tbody id="tablaJugadores"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
-
-    <div class="section-title">
-
-
-      <div>
-
-        <h2>
-          Administración de jugadores
-        </h2>
-
-        <p>
-
-          Crear jugadores, modificar categorías, administrar su estado
-          y eliminar jugadores decidiendo qué hacer con su historial.
-
-          Esta función está disponible
-          exclusivamente para administradores.
-
-        </p>
-
-      </div>
-
-
-      <button
-        type="button"
-        id="btnMostrarAdminJugadores"
-        class="btn btn-primary"
-      >
-        Administrar jugadores
-      </button>
-
-
-    </div>
-
-
-
-    <!-- CONTENIDO ADMIN JUGADORES -->
-
-    <div
-      id="contenidoAdminJugadores"
-      class="hidden"
-    >
-
-
-      <!-- CREAR JUGADOR -->
-
-      <div class="admin-subtitle">
-
-        <h3>
-          Crear nuevo jugador
-        </h3>
-
-      </div>
-
-
-      <form
-        id="formJugador"
-        class="grid-player"
-      >
-
-
-        <div>
-
-          <label for="nuevoNombre">
-            Nombre del jugador
-          </label>
-
-          <input
-            id="nuevoNombre"
-            maxlength="80"
-            autocomplete="off"
-            placeholder="Nombre y apellido"
-            required
-          >
-
-        </div>
-
-
-
-        <div>
-
-          <label for="nuevaCategoria">
-            Categoría
-          </label>
-
-
-          <select
-            id="nuevaCategoria"
-            required
-          >
-
-            <option value="">
-              Seleccione
-            </option>
-
-            <option value="1">
-              Categoría 1
-            </option>
-
-            <option value="2">
-              Categoría 2
-            </option>
-
-            <option value="3">
-              Categoría 3
-            </option>
-
-            <option value="4">
-              Categoría 4
-            </option>
-
-            <option value="5">
-              Categoría 5
-            </option>
-
-          </select>
-
-        </div>
-
-
-
-        <div>
-
-          <button
-            type="submit"
-            class="btn btn-success"
-          >
-            + Crear jugador
-          </button>
-
-        </div>
-
-
-      </form>
-
-
-
-      <div
-        id="mensajeJugador"
-        class="message hidden"
-      ></div>
-
-
-
-      <!-- LISTADO JUGADORES -->
-
-      <div class="admin-subtitle">
-
-        <h3>
-          Jugadores registrados
-        </h3>
-
-        <p class="note">
-
-          Desde esta tabla el administrador
-          puede modificar la categoría,
-          nombre o estado de cada jugador.
-
-        </p>
-
-      </div>
-
-
-
-      <div class="table-scroll">
-
-
-        <table>
-
-
-          <thead>
-
-            <tr>
-
-              <th>
-                Jugador
-              </th>
-
-              <th>
-                Categoría
-              </th>
-
-              <th>
-                Estado
-              </th>
-
-              <th>
-                Acciones
-              </th>
-
-            </tr>
-
-          </thead>
-
-
-
-          <tbody id="tablaJugadores"></tbody>
-
-
-        </table>
-
-
-      </div>
-
-
-    </div>
-
-
-  </section>
-
-
-
-  <!-- ===================================================
+        <!-- ===================================================
        ADMINISTRACIÓN DE USUARIOS
   =================================================== -->
 
-  <section class="card">
+        <section class="card">
+          <div class="section-title">
+            <div>
+              <h2>Administración de usuarios</h2>
 
+              <p>Gestión de perfiles que tienen acceso a la aplicación.</p>
+            </div>
+          </div>
 
-    <div class="section-title">
+          <p class="note">
+            El administrador puede cambiar el jugador asociado, el rol y el
+            estado de un perfil.
+          </p>
 
-      <div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre Google</th>
 
-        <h2>
-          Administración de usuarios
-        </h2>
+                  <th>Correo</th>
 
-        <p>
+                  <th>Jugador</th>
 
-          Gestión de perfiles que tienen
-          acceso a la aplicación.
+                  <th>Rol</th>
 
-        </p>
+                  <th>Activo</th>
 
-      </div>
+                  <th>Guardar</th>
+                </tr>
+              </thead>
 
-    </div>
+              <tbody id="tablaUsuarios"></tbody>
+            </table>
+          </div>
+        </section>
 
-
-
-    <p class="note">
-
-      El administrador puede cambiar
-      el jugador asociado, el rol
-      y el estado de un perfil.
-
-    </p>
-
-
-
-    <div class="table-scroll">
-
-
-      <table>
-
-
-        <thead>
-
-          <tr>
-
-            <th>
-              Nombre Google
-            </th>
-
-            <th>
-              Correo
-            </th>
-
-            <th>
-              Jugador
-            </th>
-
-            <th>
-              Rol
-            </th>
-
-            <th>
-              Activo
-            </th>
-
-            <th>
-              Guardar
-            </th>
-
-          </tr>
-
-        </thead>
-
-
-
-        <tbody id="tablaUsuarios"></tbody>
-
-
-      </table>
-
-
-    </div>
-
-
-  </section>
-
-
-
-  <!-- ===================================================
+        <!-- ===================================================
        AUDITORÍA
   =================================================== -->
 
-  <section class="card">
+        <section class="card">
+          <div class="section-title">
+            <div>
+              <h2>Auditoría</h2>
 
+              <p>Control de modificaciones efectuadas sobre los registros.</p>
+            </div>
+          </div>
 
-    <div class="section-title">
+          <p class="note">
+            Historial de correcciones, anulaciones y eliminaciones.
+          </p>
 
-      <div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
 
-        <h2>
-          Auditoría
-        </h2>
+                  <th>Acción</th>
 
-        <p>
-          Control de modificaciones efectuadas
-          sobre los registros.
-        </p>
+                  <th>N.º partido / Ref</th>
 
+                  <th>Usuario</th>
+                </tr>
+              </thead>
+
+              <tbody id="tablaAuditoria"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <!-- MODAL DE DECISIÓN AL ELIMINAR JUGADOR -->
+    <div id="modalEliminarJugador" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h3 id="modalTituloEliminar">Eliminar jugador</h3>
+        <p id="modalDetalleEliminar"></p>
+
+        <div class="modal-options">
+          <label class="modal-option">
+            <input
+              type="radio"
+              name="opcionHistorial"
+              value="conservar"
+              checked
+            />
+            <span>
+              <strong>Conservar historial de partidos</strong><br />
+              <small class="muted"
+                >El jugador se elimina de la nómina activa, pero sus partidos se
+                mantienen intactos en el registro histórico y ranking.</small
+              >
+            </span>
+          </label>
+
+          <label class="modal-option">
+            <input type="radio" name="opcionHistorial" value="anular" />
+            <span>
+              <strong>Anular todos sus partidos</strong><br />
+              <small class="muted"
+                >Sus partidos se marcarán como "anulado" (no sumarán puntos ni
+                victorias a nadie).</small
+              >
+            </span>
+          </label>
+
+          <label class="modal-option danger-option">
+            <input type="radio" name="opcionHistorial" value="eliminar" />
+            <span>
+              <strong>Eliminar definitivamente todos sus partidos</strong><br />
+              <small class="muted"
+                >Se borrarán completamente de la base de datos todos los
+                partidos donde participó este jugador.</small
+              >
+            </span>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button id="btnConfirmarEliminarJugador" class="btn btn-danger">
+            Confirmar y eliminar
+          </button>
+          <button id="btnCancelarEliminarJugador" class="btn btn-light">
+            Cancelar
+          </button>
+        </div>
       </div>
-
     </div>
 
-
-
-    <p class="note">
-
-      Historial de correcciones
-      y anulaciones de partidos.
-
-    </p>
-
-
-
-    <div class="table-scroll">
-
-
-      <table>
-
-
-        <thead>
-
-          <tr>
-
-            <th>
-              Fecha
-            </th>
-
-            <th>
-              Acción
-            </th>
-
-            <th>
-              N.º partido
-            </th>
-
-            <th>
-              Usuario
-            </th>
-
-          </tr>
-
-        </thead>
-
-
-
-        <tbody id="tablaAuditoria"></tbody>
-
-
-      </table>
-
-
-    </div>
-
-
-  </section>
-
-
-</section>
-
-
-</main>
-
-
-
-<!-- =====================================================
+    <!-- =====================================================
      SHEETJS
      GENERACIÓN DE ARCHIVOS XLSX
 ===================================================== -->
 
-<script
-  src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"
-></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-
-
-<!-- =====================================================
+    <!-- =====================================================
      JAVASCRIPT PRINCIPAL
 ===================================================== -->
 
-<script
-  type="module"
-  src="app_mejorado.js"
-></script>
-
-
-</body>
-
+    <script type="module" src="app.js"></script>
+  </body>
 </html>
