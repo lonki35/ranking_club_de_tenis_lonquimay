@@ -175,49 +175,33 @@ async function loginGoogle() {
   const modoPersistencia = recordar ? browserLocalPersistence : browserSessionPersistence;
 
   try {
-    // Definir la persistencia
     await setPersistence(auth, modoPersistencia);
     googleProvider.setCustomParameters({ prompt: "select_account" });
 
-    // Usar signInWithPopup SIEMPRE (evita el bucle de recarga de página en celulares)
+    // Intentar Popup primero en todos los dispositivos
     await signInWithPopup(auth, googleProvider);
 
   } catch (error) {
-    console.error("Error al iniciar sesión:", error);
-    
-    // Si el navegador bloqueó la ventana emergente, avisar al usuario
-    if (error.code === "auth/popup-blocked") {
-      mostrarMensaje("mensajeLogin", "Por favor, permite las ventanas emergentes en tu navegador.", "error");
+    console.error("Error en Popup:", error);
+
+    // Si el navegador móvil bloqueó el Popup o el usuario usa Safari/Navegador in-app
+    if (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user") {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+      } catch (redirectError) {
+        mostrarMensaje("mensajeLogin", "Asegúrese de abrir el sitio en Chrome o Safari directamente.", "error");
+      }
     } else {
-      mostrarMensaje("mensajeLogin", "No fue posible iniciar sesión con Google.", "error");
+      mostrarMensaje("mensajeLogin", "Error de conexión con Google. Intente nuevamente.", "error");
     }
   }
 }
-async function cerrarSesion() {
-  try {
-    detenerListeners();
-    await signOut(auth);
-    perfilActual = null;
-    usuarioActual = null;
-    mostrarSoloVista("login");
-  } catch (error) {
-    console.error(error);
-  }
-}
-
 
 /* ============================================================
    AUTH STATE
 ============================================================ */
 
-const MODO_BYPASS = false;
-
 function escucharAutenticacion() {
-  if (MODO_BYPASS) {
-    // ... tu bloque bypass si lo usas localmente ...
-    return;
-  }
-
   onAuthStateChanged(auth, async user => {
     usuarioActual = user;
 
@@ -251,9 +235,9 @@ function escucharAutenticacion() {
 
       abrirAplicacion();
     } catch (error) {
-      console.error("Error durante la verificación de perfil:", error);
+      console.error("Error cargando perfil:", error);
       mostrarSoloVista("login");
-      mostrarMensaje("mensajeLogin", "No fue posible verificar el perfil.", "error");
+      mostrarMensaje("mensajeLogin", "Error de permisos o conexión al cargar su perfil.", "error");
     }
   });
 }
