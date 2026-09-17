@@ -69,8 +69,11 @@ const googleProvider = new GoogleAuthProvider();
    JUGADORES INICIALES
 ============================================================ */
 
-const JUGADORES_INICIALES = [
+// ======================================================
+// NÓMINA OFICIAL INICIAL - CLUB DE TENIS LONQUIMAY
+// ======================================================
 
+const JUGADORES_INICIALES = [
   { nombre: "Rodrigo Alday", categoria: 1 },
   { nombre: "Diego Labrín", categoria: 1 },
   { nombre: "Alan Gamin", categoria: 1 },
@@ -92,9 +95,73 @@ const JUGADORES_INICIALES = [
   { nombre: "Fernando Uribe", categoria: 5 },
   { nombre: "Cristian Rüedi", categoria: 5 },
   { nombre: "Daniel Alegría", categoria: 5 }
-
 ];
 
+async function inicializarJugadores() {
+
+  try {
+
+    const jugadoresRef = collection(db, "jugadores");
+    const snapshot = await getDocs(jugadoresRef);
+
+    // Jugadores actualmente existentes
+    const existentes = new Set();
+
+    snapshot.forEach((documento) => {
+      const datos = documento.data();
+
+      if (datos.nombre) {
+        existentes.add(
+          datos.nombre
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+        );
+      }
+    });
+
+    let creados = 0;
+
+    for (const jugador of JUGADORES_INICIALES) {
+
+      const nombreNormalizado = jugador.nombre
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      // Evita duplicados
+      if (!existentes.has(nombreNormalizado)) {
+
+        await addDoc(jugadoresRef, {
+          nombre: jugador.nombre,
+          categoria: jugador.categoria,
+          activo: true,
+          creadoEn: serverTimestamp()
+        });
+
+        existentes.add(nombreNormalizado);
+        creados++;
+      }
+    }
+
+    console.log(
+      `Inicialización terminada. ${creados} jugadores nuevos creados.`
+    );
+
+    return creados;
+
+  } catch (error) {
+
+    console.error(
+      "Error inicializando jugadores:",
+      error
+    );
+
+    throw error;
+  }
+}
 
 /* ============================================================
    VARIABLES
@@ -261,27 +328,54 @@ function escucharAutenticacion() {
       mostrarSoloVista("login");
 
       return;
-
     }
 
     try {
 
+      // ==================================================
+      // INICIALIZAR NÓMINA DE JUGADORES
+      // ==================================================
+      // Comprueba los jugadores existentes en Firestore.
+      // Agrega únicamente los que falten.
+      // No duplica jugadores existentes.
+
+      await inicializarJugadores();
+
+
+      // ==================================================
+      // BUSCAR PERFIL DEL USUARIO
+      // ==================================================
+
       const perfilSnap = await getDoc(
         doc(db, "usuarios", user.uid)
       );
+
+
+      // ==================================================
+      // USUARIO NUEVO
+      // ==================================================
 
       if (!perfilSnap.exists()) {
 
         await prepararNuevoPerfil(user);
 
         return;
-
       }
+
+
+      // ==================================================
+      // USUARIO CON PERFIL EXISTENTE
+      // ==================================================
 
       perfilActual = {
         id: perfilSnap.id,
         ...perfilSnap.data()
       };
+
+
+      // ==================================================
+      // VERIFICAR SI LA CUENTA ESTÁ ACTIVA
+      // ==================================================
 
       if (perfilActual.activo === false) {
 
@@ -294,8 +388,12 @@ function escucharAutenticacion() {
         );
 
         return;
-
       }
+
+
+      // ==================================================
+      // ABRIR APLICACIÓN
+      // ==================================================
 
       abrirAplicacion();
 
@@ -303,7 +401,10 @@ function escucharAutenticacion() {
 
     catch (error) {
 
-      console.error(error);
+      console.error(
+        "Error durante la autenticación/inicialización:",
+        error
+      );
 
       mostrarMensaje(
         "mensajeLogin",
@@ -316,7 +417,6 @@ function escucharAutenticacion() {
   });
 
 }
-
 
 /* ============================================================
    PRIMER PERFIL
