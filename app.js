@@ -98,6 +98,10 @@ const JUGADORES_INICIALES = [
 ];
 
 async function inicializarJugadores() {
+    // La carga inicial de jugadores solo puede ejecutarla un administrador.
+  if (!usuarioActual || !esAdmin()) {
+    return;
+  }
 
   try {
 
@@ -201,6 +205,7 @@ const el = id => document.getElementById(id);
 
 document.addEventListener("DOMContentLoaded", () => {
 
+
   el("btnGoogle")
     .addEventListener("click", loginGoogle);
 
@@ -241,7 +246,13 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", descargarRankingExcel);
 
   el("formJugador")
-    .addEventListener("submit", crearJugador);
+  .addEventListener("submit", crearJugador);
+
+  el("btnMostrarAdminJugadores")
+    .addEventListener(
+      "click",
+      alternarAdministracionJugadores
+    );
 
   prepararMarcadores();
 
@@ -339,7 +350,7 @@ function escucharAutenticacion() {
       // Agrega únicamente los que falten.
       // No duplica jugadores existentes.
 
-      await inicializarJugadores();
+      
 
 
       // ==================================================
@@ -2406,16 +2417,75 @@ function descargarRankingExcel() {
 
 
 /* ============================================================
-   ADMINISTRAR JUGADORES
+   ABRIR / CERRAR ADMINISTRACIÓN DE JUGADORES
+============================================================ */
+
+function alternarAdministracionJugadores() {
+
+  if (!esAdmin()) {
+    return;
+  }
+
+  const panel =
+    el("contenidoAdminJugadores");
+
+  const boton =
+    el("btnMostrarAdminJugadores");
+
+  const estaOculto =
+    panel.classList.contains("hidden");
+
+
+  if (estaOculto) {
+
+    panel.classList.remove("hidden");
+
+    boton.textContent =
+      "Cerrar administración de jugadores";
+
+  } else {
+
+    panel.classList.add("hidden");
+
+    boton.textContent =
+      "Administrar jugadores";
+
+  }
+
+}
+
+
+/* ============================================================
+   CREAR JUGADOR
+   SOLO ADMINISTRADOR
 ============================================================ */
 
 async function crearJugador(event) {
 
   event.preventDefault();
 
+  ocultarMensaje("mensajeJugador");
+
+
+  /* ---------------------------------------------------------
+     SEGURIDAD
+  --------------------------------------------------------- */
+
   if (!esAdmin()) {
+
+    mostrarMensaje(
+      "mensajeJugador",
+      "Solo el administrador puede crear jugadores.",
+      "error"
+    );
+
     return;
   }
+
+
+  /* ---------------------------------------------------------
+     DATOS
+  --------------------------------------------------------- */
 
   const nombre =
     el("nuevoNombre").value.trim();
@@ -2425,33 +2495,143 @@ async function crearJugador(event) {
       el("nuevaCategoria").value
     );
 
-  if (
-    !nombre ||
-    !categoria
-  ) {
+
+  /* ---------------------------------------------------------
+     VALIDACIÓN NOMBRE
+  --------------------------------------------------------- */
+
+  if (!nombre) {
 
     mostrarMensaje(
-      "mensaje",
-      "Debe ingresar nombre y categoría.",
+      "mensajeJugador",
+      "Debe ingresar el nombre del jugador.",
       "error"
     );
 
     return;
-
   }
 
-  await addDoc(
-    collection(db, "jugadores"),
-    {
-      nombre,
-      categoria,
-      activo: true,
-      creadoEn:
-        serverTimestamp()
-    }
-  );
 
-  el("formJugador").reset();
+  /* ---------------------------------------------------------
+     VALIDACIÓN CATEGORÍA
+  --------------------------------------------------------- */
+
+  if (
+    ![1, 2, 3, 4, 5]
+      .includes(categoria)
+  ) {
+
+    mostrarMensaje(
+      "mensajeJugador",
+      "Debe seleccionar una categoría entre 1 y 5.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  /* ---------------------------------------------------------
+     CONTROL DE DUPLICADOS
+  --------------------------------------------------------- */
+
+  const nombreNormalizado =
+    normalizarTexto(nombre);
+
+
+  const jugadorDuplicado =
+    jugadores.find(j =>
+
+      normalizarTexto(
+        j.nombre || ""
+      ) === nombreNormalizado
+
+    );
+
+
+  if (jugadorDuplicado) {
+
+    mostrarMensaje(
+      "mensajeJugador",
+      `El jugador "${jugadorDuplicado.nombre}" ya existe en la nómina.`,
+      "error"
+    );
+
+    return;
+  }
+
+
+  /* ---------------------------------------------------------
+     GUARDAR EN FIRESTORE
+  --------------------------------------------------------- */
+
+  try {
+
+    await addDoc(
+
+      collection(
+        db,
+        "jugadores"
+      ),
+
+      {
+
+        nombre:
+          nombre,
+
+        categoria:
+          categoria,
+
+        activo:
+          true,
+
+        creadoPorUid:
+          usuarioActual.uid,
+
+        creadoPorEmail:
+          usuarioActual.email || "",
+
+        creadoEn:
+          serverTimestamp()
+
+      }
+
+    );
+
+
+    /* -------------------------------------------------------
+       LIMPIAR FORMULARIO
+    ------------------------------------------------------- */
+
+    el("formJugador").reset();
+
+
+    /* -------------------------------------------------------
+       CONFIRMACIÓN
+    ------------------------------------------------------- */
+
+    mostrarMensaje(
+      "mensajeJugador",
+      `Jugador ${nombre} creado correctamente en Categoría ${categoria}.`,
+      "ok"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Error al crear jugador:",
+      error
+    );
+
+
+    mostrarMensaje(
+      "mensajeJugador",
+      "No fue posible crear el jugador.",
+      "error"
+    );
+
+  }
 
 }
 
