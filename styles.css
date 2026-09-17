@@ -24,6 +24,37 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   background: var(--background);
   color: var(--text);
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Marca de agua fija del logo de fondo */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url("logo.jpeg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: min(
+    480px,
+    85vw
+  ); /* Tamaño óptimo tanto en PC como en celular */
+  opacity: 0.08; /* Ajusta la intensidad (0.06 - 0.12 recomendado) */
+  pointer-events: none; /* No interfiere con clics o selección de texto */
+  z-index: 0;
+}
+
+/* Asegurar que las tarjetas y cabecera queden por encima del fondo */
+.topbar,
+main,
+section,
+.wrap {
+  position: relative;
+  z-index: 1;
 }
 
 .wrap {
