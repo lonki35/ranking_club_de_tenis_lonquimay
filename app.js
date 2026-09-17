@@ -150,6 +150,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   el("btnCancelarEliminarJugador").addEventListener("click", cerrarModalEliminarJugador);
   el("btnConfirmarEliminarJugador").addEventListener("click", ejecutarEliminacionJugador);
+  // Dentro de document.addEventListener("DOMContentLoaded", ...) agrega:
+el("btnLimpiarAuditoria")?.addEventListener("click", limpiarHistorialAuditoria);
+
+// Función para vaciar la colección de auditoría
+async function limpiarHistorialAuditoria() {
+  if (!esAdmin()) return;
+
+  const confirmar = window.confirm(
+    "¿Está seguro de que desea ELIMINAR TODO el historial de auditoría? Esta acción borrará los registros permanentemente."
+  );
+
+  if (!confirmar) return;
+
+  try {
+    const snapshot = await getDocs(collection(db, "auditoria"));
+    
+    if (snapshot.empty) {
+      window.alert("El historial de auditoría ya está vacío.");
+      return;
+    }
+
+    const batch = writeBatch(db);
+    snapshot.docs.forEach(docSnap => {
+      batch.delete(doc(db, "auditoria", docSnap.id));
+    });
+
+    await batch.commit();
+    window.alert("Historial de auditoría eliminado correctamente.");
+  } catch (error) {
+    console.error("Error al limpiar auditoría:", error);
+    window.alert("Ocurrió un error al intentar borrar el historial de auditoría.");
+  }
+}
 
   prepararMarcadores();
   el("fecha").value = fechaActual();
